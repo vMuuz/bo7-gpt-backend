@@ -60,7 +60,6 @@ def search(
         d for d in docs
         if q in d.title.lower() or q in d.content.lower()
     ]
-
     # If nothing matched, just use all docs as a fallback
     if not matches:
         matches = docs
@@ -68,6 +67,8 @@ def search(
     # Convert Doc objects to dicts and limit how many we return
     results = [d.model_dump() for d in matches[:limit]]
     return {"results": results}
+
+    
 
 
        
