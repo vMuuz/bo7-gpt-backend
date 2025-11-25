@@ -41,25 +41,33 @@ def startup_event():
 def home():
     return {"status": "BO7 backend running", "num_docs": len(docs)}
 
-
 @app.get("/search")
 def search(
     query: str = Query(..., description="Search text"),
-    limit: int = Query(5, ge=1, le=20)
+    limit: int = Query(5, ge=1, le=20),
 ):
     """
     Very simple search: returns docs whose title or content contains the query text.
     """
+    # No docs loaded → return empty list
     if not docs:
         return {"results": []}
 
     q = query.lower()
+
+    # Find docs where the query is in the title or content
     matches = [
         d for d in docs
         if q in d.title.lower() or q in d.content.lower()
     ]
 
+    # If nothing matched, just use all docs as a fallback
     if not matches:
-        matches = docs  # fallback: just return first docs
+        matches = docs
 
-    results = [d.model_dump() for d_]()
+    # Convert Doc objects to dicts and limit how many we return
+    results = [d.model_dump() for d in matches[:limit]]
+    return {"results": results}
+
+
+       
