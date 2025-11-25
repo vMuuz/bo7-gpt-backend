@@ -24,12 +24,20 @@ docs: List[Doc] = []
 
 def load_docs():
     global docs
+
+    # If file missing → no docs
     if not os.path.exists(DATA_PATH):
         docs = []
         return
-    with open(DATA_PATH, "r", encoding="utf-8") as f:
-        raw = json.load(f)
-    docs = [Doc(**item) for item in raw]
+
+    try:
+        with open(DATA_PATH, "r", encoding="utf-8") as f:
+            raw = json.load(f)
+            docs = [Doc(**item) for item in raw]
+
+    except Exception:
+        docs = []  # fallback if JSON is invalid
+        print("⚠️ WARNING: base_docs.json invalid or empty. Loaded 0 docs.")
 
 
 @app.on_event("startup")
@@ -60,6 +68,7 @@ def search(
         d for d in docs
         if q in d.title.lower() or q in d.content.lower()
     ]
+
     # If nothing matched, just use all docs as a fallback
     if not matches:
         matches = docs
@@ -67,8 +76,6 @@ def search(
     # Convert Doc objects to dicts and limit how many we return
     results = [d.model_dump() for d in matches[:limit]]
     return {"results": results}
-
-    
 
 
        
